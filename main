@@ -1,0 +1,2 @@
+#!/usr/bin/bash
+nohup /home/harishannavisamy/delta-pi/onsite%202/onsite2.sh &

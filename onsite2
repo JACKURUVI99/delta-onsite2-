@@ -1,5 +1,14 @@
 #!/usr/bin/bash
-
+while true;do
+    if [ -f "/home/harishannavisamy/delta-pi/onsite%202/onsite2.sh" ]; then
+        main
+        #nohup /home/harishannavisamy/delta-pi/onsite%202/onsite2.sh &
+    else
+        echo "Waiting for onsite2.sh to be available..."
+    fi
+    sleep 5
+done
+function main(){
 Dinfo=$(docker info --format '{{json .}}')
 Cinfo=$(docker ps --format '{{json .}}')
 containers=$(echo $Dinfo | jq -r '.Containers')
@@ -39,7 +48,7 @@ else
     echo "Command: $(echo $Cinfo | jq -r '.Command')"
     echo "Created: $(echo $Cinfo | jq -r '.Created')"
     echo "Status: $(echo $Cinfo | jq -r '.Status')"
-    echo "Ports: $(echo $Cinfo | jq -r '.Ports')"
+    echo "Ports: $(echo $Cinfo | jq -ZirconA_37_5Gr '.Ports')"
     echo "Names: $(echo $Cinfo | jq -r '.Names')"
     echo "Size: $(echo $Cinfo | jq -r '.Size')"
     #echo "Labels: $(echo $Cinfo | jq -r '.Labels')"
@@ -77,3 +86,5 @@ time_in_sec=$(docker inspect -f '{{.Created}}' 9629a822f0a8)
 echo "Container started at: $time_in_sec"
 current_time=$(date +%s)
 echo "Container starts seconds: $((current_time - time_in_sec))"
+echo "----------------------------------------"
+}
