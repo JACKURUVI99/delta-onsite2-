@@ -1,0 +1,79 @@
+#!/usr/bin/bash
+
+Dinfo=$(docker info --format '{{json .}}')
+Cinfo=$(docker ps --format '{{json .}}')
+containers=$(echo $Dinfo | jq -r '.Containers')
+running_time=$(echo $Dinfo | jq -r '.ContainersRunning')
+
+if [ -z "$Dinfo" ]; then
+    echo "No Docker information available."
+else
+    echo "Docker details:"
+    echo "Server Version: $(echo $Dinfo | jq -r '.ServerVersion')"
+    echo "Storage Driver: $(echo $Dinfo | jq -r '.Driver')"
+    echo "Logging Driver: $(echo $Dinfo | jq -r '.LoggingDriver')"
+    echo "Cgroup Driver: $(echo $Dinfo | jq -r '.CgroupDriver')"
+    echo "Kernel Version: $(echo $Dinfo | jq -r '.KernelVersion')"
+    echo "Operating System: $(echo $Dinfo | jq -r '.OperatingSystem')"
+    echo "Architecture: $(echo $Dinfo | jq -r '.Architecture')"
+fi
+echo "----------------------------------------"
+if [ -z "$containers" ]; then
+    echo "No containers found."
+else
+    echo "Number of containers: $containers"
+fi
+
+if [ -z "$running_time" ]; then
+    echo "No running containers."
+else
+    echo "Number of running containers: $running_time"
+fi
+
+if [ -z "$Cinfo" ]; then
+    echo "No container information available."
+else
+    echo "Container details:"
+    echo "Container ID: $(echo $Cinfo | jq -r '.ID')"
+    echo "Image: $(echo $Cinfo | jq -r '.Image')"
+    echo "Command: $(echo $Cinfo | jq -r '.Command')"
+    echo "Created: $(echo $Cinfo | jq -r '.Created')"
+    echo "Status: $(echo $Cinfo | jq -r '.Status')"
+    echo "Ports: $(echo $Cinfo | jq -r '.Ports')"
+    echo "Names: $(echo $Cinfo | jq -r '.Names')"
+    echo "Size: $(echo $Cinfo | jq -r '.Size')"
+    #echo "Labels: $(echo $Cinfo | jq -r '.Labels')"
+    echo "Mounts: $(echo $Cinfo | jq -r '.Mounts')"
+    echo "Networks: $(echo $Cinfo | jq -r '.Networks')"
+    echo "network name: $(echo $Cinfo | jq -r '.Networks')" #bridge
+    #echo "$Cinfo" | jq -r '.'
+fi
+
+runtime="$(echo $Cinfo | jq -r '.RunningFor')" 
+
+threshold=1
+unit="seconds" 
+
+echo "Running for: $runtime"
+network_name="$(echo $Cinfo | jq -r '.Networks')"
+
+if [[ "$network_name" == "bridge" ]]; then
+    value=$(echo "$runtime" | grep -o '[0-9]*')
+    if [[ "$runtime" == *"$unit"* && "$value" -ge "$threshold" ]]; then
+        echo ":]"
+    fi
+else
+    docker stop $(echo $Cinfo | jq -r '.ID') && docker rm $(echo $Cinfo | jq -r '.ID')
+    echo "Container stopped and removed."
+    echo "Container ID: $(echo $Cinfo | jq -r '.ID')"
+    echo "Image: $(echo $Cinfo | jq -r '.Image')"
+    echo "Command: $(echo $Cinfo | jq -r '.Command')"
+fi
+
+#ins1=$(docker inspect 9629a822f0a8 | jq -r '.[0].StartedAt')
+#echo "$ins1"
+
+time_in_sec=$(docker inspect -f '{{.Created}}' 9629a822f0a8)
+echo "Container started at: $time_in_sec"
+current_time=$(date +%s)
+echo "Container starts seconds: $((current_time - time_in_sec))"
